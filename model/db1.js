@@ -120,7 +120,7 @@ exports.deleteMany = function(collectionName,json,callback){
 }
 
 
-
+// 修改
 exports.updateMany = function(collectionName,json1,json2,callback){
     __connectMongoDB(function(err,db){
         db.collection(collectionName).updateMany(json1,json2,function(err,r){
@@ -134,3 +134,13 @@ exports.updateMany = function(collectionName,json1,json2,callback){
         })
     })
 }
+
+// 得到数量
+// exports.getAllCount = function(collectionName,callback){
+//     __connectMongoDB(function(err,db){
+//             db.collection(collectionName).count({}).then(function(count){
+//                 callback(count);
+//                 db.close();
+//             });
+//     })
+// }

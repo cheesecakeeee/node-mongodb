@@ -14,10 +14,11 @@ app.get("/",function(req,res,next){
     res.render("index");
     // 新增留言
 })
-
+// 读取留言 读取的集合，条件，排序方式（决定了页面留言从数据库读取的排序方式展示方式），回调
 app.get("/du",function(req,res,next){
     // 查（读取）数据库
-    db1.find("liuyanban",{},function (err,result) {
+    var page = parseInt(req.query.page);
+    db1.find("liuyanban",{},{"sort":{"sub_time":-1},"pageAmount":5,"page":page},function (err,result) {
         res.json({"result":result});
     })
 })
@@ -31,7 +32,8 @@ app.post("/liuyan",function(req,res,next){
         // 收到请求后写入数据库
         db1.insertOne("liuyanban",{
             "name":fields.name,
-            "message":fields.message
+            "message":fields.message,
+            "sub_time":new Date()   //时间存入数据库
         },function(err,r){  
             if(err){
                 res.json(-1);   //-1返回给ajax 前端
@@ -42,6 +44,9 @@ app.post("/liuyan",function(req,res,next){
     });
 })
 
+// app.get("/count",function(err,db){
+
+// })
 // 删除留言]
 
 
