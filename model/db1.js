@@ -61,7 +61,7 @@ exports.insertOne = function(collectionName,json,callback){
 //     })
 // }
 
-//带分页的查找； 查找的集合，查找到内容，分页对象（分页的条目和分页数），回调函数
+//带分页的查找； 查找的集合，查找到内容，分页对象（分页的条目和分页数和排序），回调函数
 exports.find = function(collectionName,json,C,D){
     // 用一个空数组存放读取的文档
     var result = [];
@@ -73,15 +73,16 @@ exports.find = function(collectionName,json,C,D){
     if(arguments.length == 4){
         var callback = D;
         var args = C;
-        var skipNum = args.pageAmount*args.page ;
-        var limitNum = args.pageAmount;
+        var skipNum = args.pageAmount*args.page || 0;
+        var limitNum = args.pageAmount || 0;
+        var sort = args.sort || {};
     }else{
         callback("find函数接收3个或4个参数",null);
         return;
     }
     __connectMongoDB(function(err,db){
-        // 游标指针 limit() skip()分页读取数据
-        var cursor = db.collection(collectionName).find(json).limit(limitNum).skip(skipNum);
+        // 游标指针 limit() skip()分页读取数据        时间倒序
+        var cursor = db.collection(collectionName).find(json).limit(limitNum).skip(skipNum).sort(sort);
         // 遍历文档
         cursor.each(function(err,doc){
             if(err){
@@ -95,7 +96,6 @@ exports.find = function(collectionName,json,C,D){
                 result.push(doc);
             }else{
                 callback(null,result);
-                console.log("查找成功");
                 db.close();
             }
         })
