@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>留言板</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #success,#failure{
+            display: none;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container"> 
+        <h1>我的留言板</h1>
+        <div class="row">
+            <form class="form-horizontal col-lg-6">
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">姓名</label>
+                    <div class="col-sm-10">
+                    <input type="text" class="form-control" id="name" placeholder="请输入姓名" name="name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword3" class="col-sm-2 control-label">留言</label>
+                    <div class="col-sm-10">
+                    <textarea class="form-control" rows="3" name="message" id="message"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                    <button type="button" class="btn btn-success" id="tijiao">提交</button>
+                    </div>
+                </div>
+
+                <div class="alert alert-success" role="alert" id="success">
+                    <a href="#" class="alert-link">表单已成功提交</a>
+                </div>
+                <div class="alert alert-danger" role="alert" id="failure">
+                    <a href="#" class="alert-link">表单提交失败</a>
+                </div>
+            </form>
+        </div>
+        <nav aria-label="...">
+                <ul class="pagination">
+                    <li><a href="#" aria-label="Previous" class="previousbtn"><span aria-hidden="true">&laquo;</span></a></li>
+                    <!-- 条数访问页面时从后台的数据库读取 -->
+                    <% for(var i=1; i<=pageNum; i++){ %>
+                    <li class="pagebtn" data-page="<%= i%>" class="active" ><a href="#"><%= i%> <span class="sr-only">(current)</span></a></li>
+                    <% } %>
+                   
+                    <li><a href="#" aria-label="Next" class="nextbtn"><span aria-hidden="true">&raquo;</span></a></li>
+                </ul>
+        </nav>
+        <div id="quanbuliuyan">
+
+        </div>
+    
+</div>
+    
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/underscore.js"></script>       <!-- 前端模板引擎-->
+
+
+    <!-- 前台模板 -->
+    <script type="text/template" id="moban">
+        <div class="list-group" >
+            <a href="#" class="list-group-item ">
+                <p class="list-group-item-text">【姓名】{{=name}}</p>
+                <p class="list-group-item-text">【留言】{{=message}}</p>
+                <p class="list-group-item-text">【时间】{{=sub_time}}</p>
+            </a>
+        </div>
+    </script>
+
+
+    <script>
+        var nowPage = 1;    //当前页码
+        // 给首个页面＋active
+        $(".pagebtn:first").addClass("active");
+
+        // 为页码按钮添加事件监听，实现局部刷新
+        $(".pagebtn").click(function(){
+            $(this).addClass("active").siblings().removeClass("active");
+            // 重新发起请求
+            var page = parseInt($(this).attr("data-page"));
+            nowPage = page;
+            getData(nowPage);
+        });
+
+        // 左右页码按钮
+        $(".nextbtn").click(function(){
+            var maxPage = $(".pagebtn:last").attr("data-page");
+       
+            if(nowPage < maxPage){
+                nowPage++;
+                $(this).parent("li").removeClass("disabled");
+                $(".pagebtn").eq(nowPage-1).addClass("active").siblings().removeClass("active");
+            }else{
+                nowPage = maxPage;
+                $(this).parent("li").addClass("disabled")
+            }
+            getData(nowPage);
+        })
+
+        $(".previousbtn").click(function(){
+            if(nowPage >1){
+                nowPage--;
+                $(this).parent("li").removeClass("disabled")
+                $(".pagebtn").eq(nowPage-1).addClass("active").siblings().removeClass("active");
+            }else{
+                nowPage = 1;
+                $(this).parent("li").addClass("disabled")
+            }
+            getData(nowPage);
+        })
+
+
+        // 页面一加载就获取了0页数据
+        getData(1);
+        // 读取操作为重复执行的局部操作因此封装成一个函数
+        function getData(page){ //这里page第一个为0
+            //ajax请求数据  利用前端模板引擎把 从后台数据库读取的内容（后端要读取数据库） 渲染在页面上
+            $.get("/du?page="+(page-1),function(result){   //提交，结果返回进行操作
+                // 这里接收result已经是个json。但是返回的result里有个key为result
+                // var json = JSON.parse(result);
+
+                var compiled = _.template($("#moban").html());
+                // 每次ajax都清空假的模板
+                $("#quanbuliuyan").html("");
+                // 从数据库获取值
+                for(var i=0; i<result.result.length; i++){
+                    var html = compiled({name:result.result[i].name,message:result.result[i].message,sub_time:result.result[i].sub_time});
+                    $("#quanbuliuyan").append($(html));
+                }
+            })
+        }
+
+
+        // ajax提交表单 
+        $("#tijiao").click(function(){
+            $("#failure").hide();
+            $("#success").hide();
+            $.post("/liuyan",{  // 提交地址，内容，对返回的结果进行操作写在function
+                "name":$("#name").val(),
+                "message":$("#message").val(),
+                "sub_time":new Date()   //把时间提交到服务器用于后面的排序
+            },function(result){
+                // alert(result);
+                if(result == -1){
+                    $("#failure").fideIn();
+                }else if(result == 1){
+                    // 提交成功
+                    $("#success").fadeIn();
+                    // 提交表单后填充模板
+                    // 数据库已经存储了新增数据，但当前无法显示，需要刷新才能从ajax里获取新的
+                    // 因此需要一个假模板来接收新增的插入,而页面表单接收的数据等于数据库新增的数据。
+                    var compiled = _.template($("#moban").html());
+                    // 假模板的填充数据来自表单直接获取
+                    var html = compiled({name:$("#name").val(),message:$("#message").val(),sub_time:new Date() });
+                    $('#quanbuliuyan').prepend($(html));
+                }
+            });
+        });
+
+
+
+
+    </script>
+  </body>
+</html>

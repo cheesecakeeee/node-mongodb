@@ -8,10 +8,17 @@ var formidable = require('formidable'); //文件上传
 app.set("view engine","ejs");
 
 // 静态
-app.use(express.static("./public"));
+ app.use(express.static("./public"));
 // 显示留言列表
 app.get("/",function(req,res,next){
-    res.render("index");
+    // res.render("index");
+    // 后台读取数量，/每页数量 向上取整得到页数,传递给前端渲染页码
+    db1.getAllCount("liuyanban",function(count){
+        res.render("index",{
+            "pageNum":Math.ceil(count/5)
+        });
+    })
+    
     // 新增留言
 })
 // 读取留言 读取的集合，条件，排序方式（决定了页面留言从数据库读取的排序方式展示方式），回调
@@ -43,10 +50,8 @@ app.post("/liuyan",function(req,res,next){
         // console.log("收到留言"+fields.name+ fields.message);
     });
 })
+// 获取留言总数
 
-// app.get("/count",function(err,db){
-
-// })
 // 删除留言]
 
 

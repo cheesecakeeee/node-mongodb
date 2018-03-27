@@ -136,11 +136,11 @@ exports.updateMany = function(collectionName,json1,json2,callback){
 }
 
 // 得到数量
-// exports.getAllCount = function(collectionName,callback){
-//     __connectMongoDB(function(err,db){
-//             db.collection(collectionName).count({}).then(function(count){
-//                 callback(count);
-//                 db.close();
-//             });
-//     })
-// }
+exports.getAllCount = function(collectionName,callback){
+    __connectMongoDB(function(err,db){
+            db.collection(collectionName).count({}).then(function(count){
+                callback(count);
+                db.close();
+            });
+    })
+}
