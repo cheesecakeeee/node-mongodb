@@ -10,6 +10,13 @@
         #success,#failure{
             display: none;
         }
+        .list-group{
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .del{
+            padding: 0 10px;
+        }
     </style>
   </head>
   <body>
@@ -69,11 +76,13 @@
     <!-- 前台模板 -->
     <script type="text/template" id="moban">
         <div class="list-group" >
-            <a href="#" class="list-group-item ">
+            <!-- <a href="#" class="list-group-item "> -->
+                <!-- <p class="list-group-item-text">【id】{{=id}}</p> -->
                 <p class="list-group-item-text">【姓名】{{=name}}</p>
                 <p class="list-group-item-text">【留言】{{=message}}</p>
                 <p class="list-group-item-text">【时间】{{=sub_time}}</p>
-            </a>
+                <p class="list-group-item-text"><a href="/del?id={{=id}}" class="del" data-id="{{=id}}">删除</a></p> <!-- 把删除按钮绑定当前记录的id -->
+            <!-- </a> -->
         </div>
     </script>
 
@@ -134,7 +143,12 @@
                 $("#quanbuliuyan").html("");
                 // 从数据库获取值
                 for(var i=0; i<result.result.length; i++){
-                    var html = compiled({name:result.result[i].name,message:result.result[i].message,sub_time:result.result[i].sub_time});
+                    var html = compiled({
+                        name:result.result[i].name,
+                        message:result.result[i].message,
+                        sub_time:result.result[i].sub_time,
+                        id:result.result[i]._id
+                    });
                     $("#quanbuliuyan").append($(html));
                 }
             })
@@ -167,6 +181,7 @@
             });
         });
 
+        // 删除
 
 
 

@@ -4,6 +4,8 @@ var app = express();
 var db1 = require("./model/db1.js");
 
 var formidable = require('formidable'); //文件上传
+
+var ObjectID = require('mongodb').ObjectID;     //删除对应objectID
 // 设置后台模板引擎
 app.set("view engine","ejs");
 
@@ -12,7 +14,7 @@ app.set("view engine","ejs");
 // 显示留言列表
 app.get("/",function(req,res,next){
     // res.render("index");
-    // 后台读取数量，/每页数量 向上取整得到页数,传递给前端渲染页码
+    // 后台读取留言总数量，/每页数量 向上取整得到页数,传递给前端渲染页码
     db1.getAllCount("liuyanban",function(count){
         res.render("index",{
             "pageNum":Math.ceil(count/5)
@@ -50,10 +52,17 @@ app.post("/liuyan",function(req,res,next){
         // console.log("收到留言"+fields.name+ fields.message);
     });
 })
-// 获取留言总数
+
 
 // 删除留言]
-
-
+app.get("/del",function(req,res,next){
+    var id = req.query.id;
+    db1.deleteMany("liuyanban",{
+        "_id":ObjectID(id)
+    },function(err,r){
+        // res.send(r)
+        res.redirect("/"); //重定向
+    })
+})
 
 app.listen(8888,()=>{console.log("server running at http://127.0.0.1:8888")});
